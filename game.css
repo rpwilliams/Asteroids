@@ -1,4 +1,25 @@
 canvas#screen {
   border: 2px solid #333;
-  box-shadow: 4px 4px 4px #777;
+}
+
+.middle {
+	width: 760px;
+  height: 480px;
+
+  position: absolute;
+  top: 10%;
+  bottom: 0;
+  left: 0;
+  right: 0;
+
+  margin: auto;
+}
+
+.asteroid-img {
+  position: absolute;
+  margin: auto;
+  top: 10%;
+  left: 0;
+  right: 0;
+
 }

@@ -10,6 +10,21 @@ var canvas = document.getElementById('screen');
 var game = new Game(canvas, update, render);
 var player = new Player({x: canvas.width/2, y: canvas.height/2}, canvas);
 
+/* Loop the music */
+var myAudio = new Audio('static/asteroids_music.wav');
+if (typeof myAudio.loop == 'boolean')
+{
+    myAudio.loop = true;
+}
+else
+{
+    myAudio.addEventListener('ended', function() {
+        this.currentTime = 0;
+        this.play();
+    }, false);
+}
+myAudio.play();
+
 /**
  * @function masterLoop
  * Advances the game in sync with the refresh rate of the screen
@@ -43,8 +58,15 @@ function update(elapsedTime) {
   * @param {CanvasRenderingContext2D} ctx the context to render to
   */
 function render(elapsedTime, ctx) {
-  ctx.fillStyle = "black";
-  ctx.fillRect(0, 0, canvas.width, canvas.height);
+  /*
+    Background
+    Image is used under the public domain license
+    https://pixabay.com/en/space-stars-star-wars-darck-nero-1164579/
+  */
+  var img = new Image();
+  img.src = "static/stars.jpg";
+  ctx.drawImage(img, -20, -20);
+
   player.render(elapsedTime, ctx);
 }
 
