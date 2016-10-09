@@ -12,11 +12,29 @@ module.exports = exports = Asteroid;
  * Creates a new Asteroid object
  * @param {Postition} position object specifying an x and y
  */
-function Asteroid(position, canvas, randomNumPoints, randomDirection) {
+function Asteroid(position, canvas, randomNumPoints, size) {
   this.worldWidth = canvas.width;
   this.worldHeight = canvas.height;
   this.initialAcceleration = true; 
   this.state = "moving";
+  
+  // Use random number between 1 - 4 to determine asteroid size increase
+  switch(size)
+  {
+    case 1:
+      this.size = 0;
+      break;
+    case 2:
+      this.size = 5;
+      break;
+    case 3:
+      this.size = 10;
+      break;
+    case 4:
+      this.size = 15;
+      break;
+  }
+  
   this.position = {
     x: position.x,
     y: position.y
@@ -29,8 +47,8 @@ function Asteroid(position, canvas, randomNumPoints, randomDirection) {
   this.radius  = 64;
   //this.thrusting = false;
   this.steerLeft = true;
-  this.steerRight = false;
-  }
+  this.steerRight = true;
+  this.randomNumPoints = randomNumPoints;
 }
 
 
@@ -55,7 +73,7 @@ Asteroid.prototype.update = function(time) {
     }
     this.velocity.x -= acceleration.x;
     this.velocity.y -= acceleration.y;
-    initialAcceleration = false;
+    this.initialAcceleration = false;
   }
   // Apply velocity
   this.position.x += this.velocity.x;
@@ -65,6 +83,8 @@ Asteroid.prototype.update = function(time) {
   if(this.position.x > this.worldWidth) this.position.x -= this.worldWidth;
   if(this.position.y < 0) this.position.y += this.worldHeight;
   if(this.position.y > this.worldHeight) this.position.y -= this.worldHeight;
+
+  
 }
 
 /**
@@ -78,12 +98,62 @@ Asteroid.prototype.render = function(time, ctx) {
   // Draw Asteroid's ship
   ctx.translate(this.position.x, this.position.y);
   ctx.rotate(-this.angle);
+  
+  // ctx.beginPath();
+  // ctx.moveTo(0, -10);
+  // ctx.lineTo(-10, 10);
+  // ctx.lineTo(0, 0);
+  // ctx.lineTo(10, 10);
+  // ctx.closePath();
+  // ctx.beginPath();
+  // var count = this.randomNumPoints;
+  // while(count > 0)
+  // {
+  //   ctx.moveTo(0, -10);
+  //   ctx.lineTo(10,10);
+  //   ctx.lineTo(0, 0);
+  //   ctx.lineTo(10, 10);
+  //   count--;
+  // }
+  // ctx.closePath();
   ctx.beginPath();
-  ctx.moveTo(0, -10);
-  ctx.lineTo(-10, 10);
-  ctx.lineTo(0, 0);
-  ctx.lineTo(10, 10);
-  ctx.closePath();
+  
+
+  var size = this.size;
+  var numPoints = this.randomNumPoints
+  console.log(size);
+
+  switch(numPoints)
+  {
+    case 3:
+      ctx.moveTo(0, 20 + size);
+      ctx.lineTo(5 + size, 10); 
+      ctx.lineTo(10 + size, 15);  
+      ctx.closePath();
+      console.log("3 points");
+      break;
+    case 4:
+      ctx.moveTo(0, 20 + size);
+      ctx.lineTo(10 + size, 15);
+      ctx.lineTo(5, 10);
+      ctx.lineTo(-10 - size, 10);
+      ctx.closePath();
+      console.log("4 points");
+      break;
+    case 5:
+      ctx.moveTo(0, 20 + size);
+      ctx.lineTo(10 + size, 15);
+      ctx.lineTo(5, 10);
+      ctx.lineTo(-5 - size, 5);
+      ctx.lineTo(-10 - size, 10);
+      ctx.closePath();
+      console.log("5 points");
+      break;
+  }
+  
+  //ctx.arc(0, 15, 10, 0, Math.PI, true);
+  //ctx.arc(0, 10, 5, 0, Math.PI, true);
+   
   ctx.strokeStyle = 'white';
   ctx.stroke();
 

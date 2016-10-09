@@ -3,11 +3,14 @@
 /* Classes */
 const Game = require('./game.js');
 const Player = require('./player.js');
+const Asteroid = require('./asteroid.js');
 
 /* Global variables */
 var canvas = document.getElementById('screen');
 var game = new Game(canvas, update, render);
 var player = new Player({x: canvas.width/2, y: canvas.height/2}, canvas);
+var asteroids = [];
+
 
 
 function loopBackgroundMusic()
@@ -34,6 +37,29 @@ function loopBackgroundMusic()
 loopBackgroundMusic();
 
 
+function init() {
+  var numAsteroids = 10;
+  createAsteroids(numAsteroids);
+}
+init();
+
+function createAsteroids(numAsteroids)
+{
+  // An asteroid can't have anything less than three points
+  const MINIMUM_POINTS = 3;
+  const MAXIMUM_POINTS = 5; 
+  const MAXIMUM_SIZE = 4;
+  const MINIMUM_SIZE = 1;
+  for(var i = 0; i < numAsteroids; i++)
+  {
+    var randomX = Math.floor(Math.random() * 720) + 10;
+    var randomY = Math.floor(Math.random() * 480) + 10;
+    var randomSize = Math.floor(Math.random() * MAXIMUM_SIZE) + MINIMUM_SIZE;
+    var randomNumPoints = Math.floor(Math.random() * MAXIMUM_POINTS - MINIMUM_POINTS) + MINIMUM_POINTS;
+    asteroids.push(new Asteroid({x: randomX, y: randomY}, canvas, randomNumPoints, randomSize));
+  }
+}
+
 /**
  * @function masterLoop
  * Advances the game in sync with the refresh rate of the screen
@@ -56,6 +82,11 @@ masterLoop(performance.now());
  */
 function update(elapsedTime) {
   player.update(elapsedTime);
+
+  for(var i = 0; i < asteroids.length; i++)
+  {
+    asteroids[i].update(elapsedTime);
+  }
   // TODO: Update the game objects
 }
 
@@ -76,5 +107,12 @@ function render(elapsedTime, ctx) {
   img.src = "static/stars.jpg";
   ctx.drawImage(img, -20, -20);
 
+  // Render the player
   player.render(elapsedTime, ctx);
+
+  // Render the asteroid
+  for(var i = 0; i < asteroids.length; i++)
+  {
+    asteroids[i].render(elapsedTime, ctx);
+  }
 }
