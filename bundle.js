@@ -10,20 +10,30 @@ var canvas = document.getElementById('screen');
 var game = new Game(canvas, update, render);
 var player = new Player({x: canvas.width/2, y: canvas.height/2}, canvas);
 
-/* Loop the music */
-var myAudio = new Audio('static/asteroids_music.wav');
-if (typeof myAudio.loop == 'boolean')
+
+function loopBackgroundMusic()
 {
-    myAudio.loop = true;
+  /*
+    Background music is used under the creative commons license
+    http://www.freesound.org/people/ERH/sounds/62067/
+  */
+  var backgroundMusic = new Audio('static/asteroids_music.wav');
+  /* Loop the music */
+  if (typeof backgroundMusic.loop == 'boolean')
+  {
+      backgroundMusic.loop = true;
+  }
+  else
+  {
+      backgroundMusic.addEventListener('ended', function() {
+          this.currentTime = 0;
+          this.play();
+      }, false);
+  }
+  backgroundMusic.play();
 }
-else
-{
-    myAudio.addEventListener('ended', function() {
-        this.currentTime = 0;
-        this.play();
-    }, false);
-}
-myAudio.play();
+loopBackgroundMusic();
+
 
 /**
  * @function masterLoop
