@@ -12,12 +12,13 @@ module.exports = exports = Asteroid;
  * Creates a new Asteroid object
  * @param {Postition} position object specifying an x and y
  */
-function Asteroid(position, canvas, randomNumPoints, size) {
+function Asteroid(position, canvas, randomNumPoints, size, angle) {
   this.worldWidth = canvas.width;
   this.worldHeight = canvas.height;
   this.initialAcceleration = true; 
   this.state = "moving";
-  
+  this.height = null;
+  this.width = null;
   // Use random number between 1 - 4 to determine asteroid size increase
   switch(size)
   {
@@ -31,7 +32,7 @@ function Asteroid(position, canvas, randomNumPoints, size) {
       this.size = 10;
       break;
     case 4:
-      this.size = 15;
+      this.size = 20;
       break;
   }
   
@@ -43,12 +44,31 @@ function Asteroid(position, canvas, randomNumPoints, size) {
     x: 0,
     y: 0
   }
-  this.angle = 0;
+  this.angle = angle;
   this.radius  = 64;
   //this.thrusting = false;
-  this.steerLeft = true;
+
+  // if(right && left)
+  // {
+  //   this.steerRight = true;
+  //   this.steerLeft = true;
+  // }
+  // else if(left)
+  // {
+  //   this.steerLeft = true;
+  //   this.steerRight = false;
+  // }
+  // else if(right)
+  // {
+  //   this.steerRight = true;
+  //   this.steerLeft = false;
+  // }
   this.steerRight = true;
+  this.steerLeft = true;
   this.randomNumPoints = randomNumPoints;
+
+  // Calculate the mass
+  // this.mass = this.size * this.this.randomNumPoints;
 }
 
 
@@ -63,7 +83,7 @@ Asteroid.prototype.update = function(time) {
     this.angle += time * 0.005;
   }
   if(this.steerRight) {
-    this.angle -= 0.1;
+    this.angle -= .1;
   }
   // Apply acceleration
   if(this.initialAcceleration) {
@@ -99,30 +119,10 @@ Asteroid.prototype.render = function(time, ctx) {
   ctx.translate(this.position.x, this.position.y);
   ctx.rotate(-this.angle);
   
-  // ctx.beginPath();
-  // ctx.moveTo(0, -10);
-  // ctx.lineTo(-10, 10);
-  // ctx.lineTo(0, 0);
-  // ctx.lineTo(10, 10);
-  // ctx.closePath();
-  // ctx.beginPath();
-  // var count = this.randomNumPoints;
-  // while(count > 0)
-  // {
-  //   ctx.moveTo(0, -10);
-  //   ctx.lineTo(10,10);
-  //   ctx.lineTo(0, 0);
-  //   ctx.lineTo(10, 10);
-  //   count--;
-  // }
-  // ctx.closePath();
   ctx.beginPath();
-  
-
   var size = this.size;
   var numPoints = this.randomNumPoints
-  console.log(size);
-
+  
   switch(numPoints)
   {
     case 3:
@@ -130,7 +130,11 @@ Asteroid.prototype.render = function(time, ctx) {
       ctx.lineTo(5 + size, 10); 
       ctx.lineTo(10 + size, 15);  
       ctx.closePath();
-      console.log("3 points");
+
+      this.height = (20 + size) - 10;
+      this.width = 10 + size;
+      //console.log("3 points size: " + this.size);
+      //console.log("3 points height: " + this.height + "width: " + this.width);
       break;
     case 4:
       ctx.moveTo(0, 20 + size);
@@ -138,7 +142,12 @@ Asteroid.prototype.render = function(time, ctx) {
       ctx.lineTo(5, 10);
       ctx.lineTo(-10 - size, 10);
       ctx.closePath();
-      console.log("4 points");
+      
+
+      this.height = (20 + size) - 5;
+      this.width = (10 + size) - (-10 - size);
+      //console.log("4 points size: " + this.size);
+      //console.log("4 points height: " + this.height + "width: " + this.width);
       break;
     case 5:
       ctx.moveTo(0, 20 + size);
@@ -147,7 +156,11 @@ Asteroid.prototype.render = function(time, ctx) {
       ctx.lineTo(-5 - size, 5);
       ctx.lineTo(-10 - size, 10);
       ctx.closePath();
-      console.log("5 points");
+
+      this.height = (20 + size) - 5;
+      this.width = (10 + size) - (-10 - size);
+      //console.log("5 points size: " + this.size);
+      //console.log("5 points height: " + this.height + "width: " + this.width);
       break;
   }
   
@@ -157,15 +170,8 @@ Asteroid.prototype.render = function(time, ctx) {
   ctx.strokeStyle = 'white';
   ctx.stroke();
 
-  // // Draw engine thrust
-  // if(this.thrusting) {
-  //   ctx.beginPath();
-  //   ctx.moveTo(0, 20);
-  //   ctx.lineTo(5, 10);
-  //   ctx.arc(0, 10, 5, 0, Math.PI, true);
-  //   ctx.closePath();
-  //   ctx.strokeStyle = 'orange';
-  //   ctx.stroke();
-  // }
+  
+
   ctx.restore();
 }
+

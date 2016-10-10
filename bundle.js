@@ -48,16 +48,42 @@ function createAsteroids(numAsteroids)
 {
   // An asteroid can't have anything less than three points
   const MINIMUM_POINTS = 3;
-  const MAXIMUM_POINTS = 5; 
+  const MAXIMUM_POINTS = 6;  // Max is actually 5 because it is non inclusive
   const MAXIMUM_SIZE = 4;
   const MINIMUM_SIZE = 1;
+  var angle = 10
   for(var i = 0; i < numAsteroids; i++)
   {
     var randomX = Math.floor(Math.random() * 720) + 10;
     var randomY = Math.floor(Math.random() * 480) + 10;
     var randomSize = Math.floor(Math.random() * MAXIMUM_SIZE) + MINIMUM_SIZE;
     var randomNumPoints = Math.floor(Math.random() * MAXIMUM_POINTS - MINIMUM_POINTS) + MINIMUM_POINTS;
-    asteroids.push(new Asteroid({x: randomX, y: randomY}, canvas, randomNumPoints, randomSize));
+
+    // Alternate every other direction of the asteroid
+    // e.g 1 is right, 2 is left, 3 is right, etc.
+    // var rightOrLeft = i % 2;
+    // var right;
+    // var left;
+
+    // Make the first asteroid a different direction than all the asteroids
+    // if(i == 0)
+    // {
+    //   right = true;
+    //   left = true;
+    // }
+    // else if(rightOrLeft == 0)
+    // {
+    //   right = true;
+    //   left = false;
+    // }
+    // else
+    // {
+    //   left = true;
+    //   right = false;
+    // }
+    asteroids.push(new Asteroid({x: randomX, y: randomY}, canvas, 
+      randomNumPoints, randomSize, angle));
+    angle += 5;
   }
 }
 
@@ -87,6 +113,24 @@ function update(elapsedTime) {
   for(var i = 0; i < asteroids.length; i++)
   {
     asteroids[i].update(elapsedTime);
+  }
+
+  for(var i = 0; i < asteroids.length - 1; i++)
+  {
+    if(checkCollision(asteroids[i], asteroids[i+1]))
+    {
+      if(asteroids[i].size == 1)
+      {
+        // remove the asteroid
+      }
+      if(asteroids[i + 1].size == 1)
+      {
+        // remove the asteroid
+      }
+
+      asteroids[i].size /= 2;
+      asteroids[i+1].size /= 2;
+    }
   }
   // TODO: Update the game objects
 }
@@ -118,6 +162,23 @@ function render(elapsedTime, ctx) {
   }
 }
 
+function checkCollision(asteroid1, asteroid2)
+{
+  var rect1 = {x: asteroid1.position.x, y: asteroid1.position.y, 
+    width: asteroid1.width, height: asteroid1.height};
+  var rect2 = {x: asteroid2.position.x, y: asteroid2.position.y, 
+    width: asteroid2.width, height: asteroid2.height};
+  if (rect1.x < rect2.x + rect2.width &&
+   rect1.x + rect1.width > rect2.x &&
+   rect1.y < rect2.y + rect2.height &&
+   rect1.height + rect1.y > rect2.y) {
+    console.log("Collision detected between num of points " +
+      asteroid1.randomNumPoints + "and num of points " + asteroid2.randomNumPoints);
+    return;
+    //return true;  // Collision detected
+  }
+}
+
 },{"./asteroid.js":2,"./game.js":3,"./player.js":4}],2:[function(require,module,exports){
 "use strict";
 
@@ -133,12 +194,13 @@ module.exports = exports = Asteroid;
  * Creates a new Asteroid object
  * @param {Postition} position object specifying an x and y
  */
-function Asteroid(position, canvas, randomNumPoints, size) {
+function Asteroid(position, canvas, randomNumPoints, size, angle) {
   this.worldWidth = canvas.width;
   this.worldHeight = canvas.height;
   this.initialAcceleration = true; 
   this.state = "moving";
-  
+  this.height = null;
+  this.width = null;
   // Use random number between 1 - 4 to determine asteroid size increase
   switch(size)
   {
@@ -152,7 +214,7 @@ function Asteroid(position, canvas, randomNumPoints, size) {
       this.size = 10;
       break;
     case 4:
-      this.size = 15;
+      this.size = 20;
       break;
   }
   
@@ -164,12 +226,31 @@ function Asteroid(position, canvas, randomNumPoints, size) {
     x: 0,
     y: 0
   }
-  this.angle = 0;
+  this.angle = angle;
   this.radius  = 64;
   //this.thrusting = false;
-  this.steerLeft = true;
+
+  // if(right && left)
+  // {
+  //   this.steerRight = true;
+  //   this.steerLeft = true;
+  // }
+  // else if(left)
+  // {
+  //   this.steerLeft = true;
+  //   this.steerRight = false;
+  // }
+  // else if(right)
+  // {
+  //   this.steerRight = true;
+  //   this.steerLeft = false;
+  // }
   this.steerRight = true;
+  this.steerLeft = true;
   this.randomNumPoints = randomNumPoints;
+
+  // Calculate the mass
+  // this.mass = this.size * this.this.randomNumPoints;
 }
 
 
@@ -184,7 +265,7 @@ Asteroid.prototype.update = function(time) {
     this.angle += time * 0.005;
   }
   if(this.steerRight) {
-    this.angle -= 0.1;
+    this.angle -= .1;
   }
   // Apply acceleration
   if(this.initialAcceleration) {
@@ -220,30 +301,10 @@ Asteroid.prototype.render = function(time, ctx) {
   ctx.translate(this.position.x, this.position.y);
   ctx.rotate(-this.angle);
   
-  // ctx.beginPath();
-  // ctx.moveTo(0, -10);
-  // ctx.lineTo(-10, 10);
-  // ctx.lineTo(0, 0);
-  // ctx.lineTo(10, 10);
-  // ctx.closePath();
-  // ctx.beginPath();
-  // var count = this.randomNumPoints;
-  // while(count > 0)
-  // {
-  //   ctx.moveTo(0, -10);
-  //   ctx.lineTo(10,10);
-  //   ctx.lineTo(0, 0);
-  //   ctx.lineTo(10, 10);
-  //   count--;
-  // }
-  // ctx.closePath();
   ctx.beginPath();
-  
-
   var size = this.size;
   var numPoints = this.randomNumPoints
-  console.log(size);
-
+  
   switch(numPoints)
   {
     case 3:
@@ -251,7 +312,11 @@ Asteroid.prototype.render = function(time, ctx) {
       ctx.lineTo(5 + size, 10); 
       ctx.lineTo(10 + size, 15);  
       ctx.closePath();
-      console.log("3 points");
+
+      this.height = (20 + size) - 10;
+      this.width = 10 + size;
+      //console.log("3 points size: " + this.size);
+      //console.log("3 points height: " + this.height + "width: " + this.width);
       break;
     case 4:
       ctx.moveTo(0, 20 + size);
@@ -259,7 +324,12 @@ Asteroid.prototype.render = function(time, ctx) {
       ctx.lineTo(5, 10);
       ctx.lineTo(-10 - size, 10);
       ctx.closePath();
-      console.log("4 points");
+      
+
+      this.height = (20 + size) - 5;
+      this.width = (10 + size) - (-10 - size);
+      //console.log("4 points size: " + this.size);
+      //console.log("4 points height: " + this.height + "width: " + this.width);
       break;
     case 5:
       ctx.moveTo(0, 20 + size);
@@ -268,7 +338,11 @@ Asteroid.prototype.render = function(time, ctx) {
       ctx.lineTo(-5 - size, 5);
       ctx.lineTo(-10 - size, 10);
       ctx.closePath();
-      console.log("5 points");
+
+      this.height = (20 + size) - 5;
+      this.width = (10 + size) - (-10 - size);
+      //console.log("5 points size: " + this.size);
+      //console.log("5 points height: " + this.height + "width: " + this.width);
       break;
   }
   
@@ -278,18 +352,11 @@ Asteroid.prototype.render = function(time, ctx) {
   ctx.strokeStyle = 'white';
   ctx.stroke();
 
-  // // Draw engine thrust
-  // if(this.thrusting) {
-  //   ctx.beginPath();
-  //   ctx.moveTo(0, 20);
-  //   ctx.lineTo(5, 10);
-  //   ctx.arc(0, 10, 5, 0, Math.PI, true);
-  //   ctx.closePath();
-  //   ctx.strokeStyle = 'orange';
-  //   ctx.stroke();
-  // }
+  
+
   ctx.restore();
 }
+
 
 },{}],3:[function(require,module,exports){
 "use strict";
