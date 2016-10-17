@@ -1,0 +1,23 @@
+There are 3 points.
+	The size is 1
+	Asteroid height: 11 Asteroid width: 11
+
+There are 4 points.
+	The size is 1
+	Asteroid height: 16 Asteroid width: 22
+
+There are 4 points.
+	The size is 4
+	Asteroid height: 19 Asteroid width: 28
+
+There are 5 points.
+ The size is 1
+ Asteroid height: 16 Asteroid width: 22
+
+There are 5 points.
+	The size is 2
+	Asteroid height: 17 Asteroid width: 24
+
+There are 3 points.
+	The size is 3
+	Asteroid height: 13 Asteroid width: 13

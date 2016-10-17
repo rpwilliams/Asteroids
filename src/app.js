@@ -5,6 +5,13 @@ const Game = require('./game.js');
 const Player = require('./player.js');
 const Asteroid = require('./asteroid.js');
 
+/*
+  SAT.js
+  Used under the MIT license
+  https://github.com/jriecken/sat-js
+*/
+const SAT = require('sat');
+
 /* Global variables */
 var canvas = document.getElementById('screen');
 var game = new Game(canvas, update, render);
@@ -48,15 +55,15 @@ function createAsteroids(numAsteroids)
   // An asteroid can't have anything less than three points
   const MINIMUM_POINTS = 3;
   const MAXIMUM_POINTS = 6;  // Max is actually 5 because it is non inclusive
-  const MAXIMUM_SIZE = 4;
+  const MAXIMUM_SIZE = 5;
   const MINIMUM_SIZE = 1;
   var angle = 10
   for(var i = 0; i < numAsteroids; i++)
   {
     var randomX = Math.floor(Math.random() * 720) + 10;
     var randomY = Math.floor(Math.random() * 480) + 10;
-    var randomSize = Math.floor(Math.random() * MAXIMUM_SIZE) + MINIMUM_SIZE;
-    var randomNumPoints = Math.floor(Math.random() * MAXIMUM_POINTS - MINIMUM_POINTS) + MINIMUM_POINTS;
+    var randomSize = Math.floor(Math.random() * (MAXIMUM_SIZE - MINIMUM_SIZE)) + MINIMUM_SIZE;
+    var randomNumPoints = Math.floor(Math.random() * (MAXIMUM_POINTS - MINIMUM_POINTS)) + MINIMUM_POINTS;
 
     // Alternate every other direction of the asteroid
     // e.g 1 is right, 2 is left, 3 is right, etc.
@@ -81,8 +88,12 @@ function createAsteroids(numAsteroids)
     //   right = false;
     // }
     asteroids.push(new Asteroid({x: randomX, y: randomY}, canvas, 
-      randomNumPoints, randomSize, angle));
-    angle += 5;
+      3, randomSize, angle));
+    angle += 5; // Used to test collisions
+
+    console.log("There are " + randomNumPoints + " points.")
+    console.log("The size is " + randomSize)
+    console.log("Asteroid height: " + asteroids[i].height + " Asteroid width: " + asteroids[i].width);
   }
 }
 
@@ -114,23 +125,8 @@ function update(elapsedTime) {
     asteroids[i].update(elapsedTime);
   }
 
-  for(var i = 0; i < asteroids.length - 1; i++)
-  {
-    if(checkCollision(asteroids[i], asteroids[i+1]))
-    {
-      if(asteroids[i].size == 1)
-      {
-        // remove the asteroid
-      }
-      if(asteroids[i + 1].size == 1)
-      {
-        // remove the asteroid
-      }
 
-      asteroids[i].size /= 2;
-      asteroids[i+1].size /= 2;
-    }
-  }
+
   // TODO: Update the game objects
 }
 
@@ -157,23 +153,28 @@ function render(elapsedTime, ctx) {
   // Render the asteroid
   for(var i = 0; i < asteroids.length; i++)
   {
-    asteroids[i].render(elapsedTime, ctx);
+    asteroids[i].render(elapsedTime, ctx, 'white');
   }
+
 }
 
-function checkCollision(asteroid1, asteroid2)
+// function collision(asteroid1, asteroid2)
+// {
+//   var rect1 = {x: asteroid1.position.x, y: asteroid1.position.y, 
+//     width: asteroid1.width, height: asteroid1.height};
+//   var rect2 = {x: asteroid2.position.x, y: asteroid2.position.y, 
+//     width: asteroid2.width, height: asteroid2.height};
+//   if (rect1.x < rect2.x + rect2.width &&
+//    rect1.x + rect1.width > rect2.x &&
+//    rect1.y < rect2.y + rect2.height &&
+//    rect1.height + rect1.y > rect2.y) {
+//     console.log("Collision detected!");
+//     return;
+//     //return true;  // Collision detected
+//   }
+// }
+
+function polygonCollision(polygon1, polygon2)
 {
-  var rect1 = {x: asteroid1.position.x, y: asteroid1.position.y, 
-    width: asteroid1.width, height: asteroid1.height};
-  var rect2 = {x: asteroid2.position.x, y: asteroid2.position.y, 
-    width: asteroid2.width, height: asteroid2.height};
-  if (rect1.x < rect2.x + rect2.width &&
-   rect1.x + rect1.width > rect2.x &&
-   rect1.y < rect2.y + rect2.height &&
-   rect1.height + rect1.y > rect2.y) {
-    console.log("Collision detected between num of points " +
-      asteroid1.randomNumPoints + "and num of points " + asteroid2.randomNumPoints);
-    return;
-    //return true;  // Collision detected
-  }
+  var response = new SAT.Response();
 }

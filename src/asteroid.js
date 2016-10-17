@@ -17,8 +17,8 @@ function Asteroid(position, canvas, randomNumPoints, size, angle) {
   this.worldHeight = canvas.height;
   this.initialAcceleration = true; 
   this.state = "moving";
-  this.height = null;
-  this.width = null;
+  this.randomNumPoints = randomNumPoints;
+
   // Use random number between 1 - 4 to determine asteroid size increase
   switch(size)
   {
@@ -33,6 +33,23 @@ function Asteroid(position, canvas, randomNumPoints, size, angle) {
       break;
     case 4:
       this.size = 20;
+      break;
+  }
+
+  // Calculate the height and width of the asteroid
+  switch(randomNumPoints)
+  {
+    case 3:
+      this.height = (20 + this.size) - (15);
+      this.width = (10 + this.size) - (5 + this.size);
+      break;
+    case 4:
+      this.height = (20 + this.size) - 5;
+      this.width = (10 + this.size) - (-10 - this.size);
+      break;
+    case 5:
+      this.height = (20 + this.size) - 5;
+      this.width = (10 + this.size) - (-10 - this.size);
       break;
   }
   
@@ -65,7 +82,7 @@ function Asteroid(position, canvas, randomNumPoints, size, angle) {
   // }
   this.steerRight = true;
   this.steerLeft = true;
-  this.randomNumPoints = randomNumPoints;
+  
 
   // Calculate the mass
   // this.mass = this.size * this.this.randomNumPoints;
@@ -112,7 +129,7 @@ Asteroid.prototype.update = function(time) {
  * {DOMHighResTimeStamp} time the elapsed time since the last frame
  * {CanvasRenderingContext2D} ctx the context to render into
  */
-Asteroid.prototype.render = function(time, ctx) {
+Asteroid.prototype.render = function(time, ctx, color) {
   ctx.save();
 
   // Draw Asteroid's ship
@@ -131,8 +148,6 @@ Asteroid.prototype.render = function(time, ctx) {
       ctx.lineTo(10 + size, 15);  
       ctx.closePath();
 
-      this.height = (20 + size) - 10;
-      this.width = 10 + size;
       //console.log("3 points size: " + this.size);
       //console.log("3 points height: " + this.height + "width: " + this.width);
       break;
@@ -143,9 +158,6 @@ Asteroid.prototype.render = function(time, ctx) {
       ctx.lineTo(-10 - size, 10);
       ctx.closePath();
       
-
-      this.height = (20 + size) - 5;
-      this.width = (10 + size) - (-10 - size);
       //console.log("4 points size: " + this.size);
       //console.log("4 points height: " + this.height + "width: " + this.width);
       break;
@@ -157,8 +169,7 @@ Asteroid.prototype.render = function(time, ctx) {
       ctx.lineTo(-10 - size, 10);
       ctx.closePath();
 
-      this.height = (20 + size) - 5;
-      this.width = (10 + size) - (-10 - size);
+    
       //console.log("5 points size: " + this.size);
       //console.log("5 points height: " + this.height + "width: " + this.width);
       break;
@@ -167,7 +178,7 @@ Asteroid.prototype.render = function(time, ctx) {
   //ctx.arc(0, 15, 10, 0, Math.PI, true);
   //ctx.arc(0, 10, 5, 0, Math.PI, true);
    
-  ctx.strokeStyle = 'white';
+  ctx.strokeStyle = color;
   ctx.stroke();
 
   
