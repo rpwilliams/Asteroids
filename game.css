@@ -23,3 +23,60 @@ canvas#screen {
   right: 0;
 
 }
+
+.middle-space {
+  position: absolute;
+  margin: auto;
+  top: 50%;
+  left: 40%;
+  right: 40%;
+  bottom: 50%;
+}
+
+.middle-score {
+  position: absolute;
+  margin: auto;
+  top: 25%;
+  left: 40%;
+  right: 40%;
+  bottom: 25%;
+}
+
+.p-other
+{
+  font-family: calibri;
+  font-size:50px;
+}
+
+.p-other
+{
+  font-family: calibri;
+  font-size:60px;
+}
+
+.instructions
+{
+  position: absolute;
+  top: 50%;
+  bottom: 50%;
+  left: 0;
+  right: 0;
+}
+
+.instructions2
+{
+  position: absolute;
+  top: 45%;
+  bottom: 45%;
+  left: 0;
+  right: 0;
+}
+
+.instructions3
+{
+  position: absolute;
+  top: 40%;
+  bottom: 40%;
+  left: 0;
+  right: 0;
+}

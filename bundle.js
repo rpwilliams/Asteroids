@@ -1,4 +1,5 @@
 (function e(t,n,r){function s(o,u){if(!n[o]){if(!t[o]){var a=typeof require=="function"&&require;if(!u&&a)return a(o,!0);if(i)return i(o,!0);var f=new Error("Cannot find module '"+o+"'");throw f.code="MODULE_NOT_FOUND",f}var l=n[o]={exports:{}};t[o][0].call(l.exports,function(e){var n=t[o][1][e];return s(n?n:e)},l,l.exports,e,t,n,r)}return n[o].exports}var i=typeof require=="function"&&require;for(var o=0;o<r.length;o++)s(r[o]);return s})({1:[function(require,module,exports){
+
 "use strict;"
 
 /* Classes */
@@ -11,6 +12,12 @@ var canvas = document.getElementById('screen');
 var game = new Game(canvas, update, render);
 var player = new Player({x: canvas.width/2, y: canvas.height/2}, canvas);
 var asteroids = [];
+var gameOver = false;
+var numAsteroids = 10;
+
+var lives = 3;
+var score = 0;
+var level = 1;
 
 const MINIMUM_POINTS = 3;
 const MAXIMUM_POINTS = 6;  // Max is actually 5 because it is non inclusive
@@ -41,7 +48,6 @@ function loopBackgroundMusic()
 loopBackgroundMusic();
 
 function init() {
-  var numAsteroids = 20;
   createAsteroids(numAsteroids);
 }
 init();
@@ -96,22 +102,58 @@ masterLoop(performance.now());
  * the number of milliseconds passed since the last frame.
  */
 function update(elapsedTime) {
-  player.update(elapsedTime);
-
-  // TODO: Update the game objects
-  for(var i = 0; i < asteroids.length; i++)
+  document.getElementById('score').innerHTML = "Score: " + score;
+  document.getElementById('level').innerHTML = "Level: " + level;
+  document.getElementById('lives').innerHTML = "Lives: " + lives;
+  if(!gameOver)
   {
-    asteroids[i].update(elapsedTime);
-    for(var j = i+1; j < asteroids.length; j++)
+    player.update(elapsedTime);
+    for(var i =0; i < asteroids.length; i++)
     {
-      if(boundingBoxCollision(asteroids[i], asteroids[j]))
+      if(boundingBoxCollision(asteroids[i], player))
       {
-        asteroids[i].color = 'red';
-        asteroids[j].color = 'red';
-        console.log("Collision detected!");
+        console.log("Player collision detected!");
+        stop();
+      }
+    }
+    // TODO: Update the game objects
+    for(var i = 0; i < asteroids.length; i++)
+    {
+      asteroids[i].update(elapsedTime);
+      for(var j = i+1; j < asteroids.length; j++)
+      {
+        // Asteroid to asteroid collision
+        if(boundingBoxCollision(asteroids[i], asteroids[j]))
+        {
+          asteroids[i].color = 'red';
+          asteroids[j].color = 'red';
+        }
       }
     }
   }
+  else
+  {
+    if(lives > 0)
+    {
+      //document.getElementById('final').innerHTML = "Final Score: " + score;
+      //document.getElementById('try again').innerHTML = "<b>Press space to continue</b>";
+      asteroids = [];
+      init();
+      gameOver = false;
+      player.position.x = 380;
+      player.position.y = 240;
+      player.velocity.x = 0;
+      player.velocity.y = 0;
+      console.log("Lives: " + lives);
+    }
+    else
+    {
+      asteroids = [];
+      document.getElementById('game over').innerHTML = "Game Over";
+      document.getElementById('final').innerHTML = "Final Score: " + score;    
+    }
+  }
+      
 }
 
 /**
@@ -131,7 +173,7 @@ function render(elapsedTime, ctx) {
   img.src = "static/stars.jpg";
   ctx.drawImage(img, -20, -20);
   // Render the player
-  player.render(elapsedTime, ctx);
+  player.render(elapsedTime, ctx, gameOver);
   // Render the asteroid
   for(var i = 0; i < asteroids.length; i++)
   {
@@ -156,11 +198,17 @@ function boundingBoxCollision(a, b)
     );
 }
 
-
+function stop()
+{
+  var audio = new Audio('static/player_death.wav'); // Created with http://www.bfxr.net/
+  audio.play();
+  lives--;
+  gameOver = true;
+}
 },{"./asteroid.js":2,"./game.js":3,"./player.js":4}],2:[function(require,module,exports){
 "use strict";
 
-const MS_PER_FRAME = 1000/8;
+const MS_PER_FRAME = 1000/16;
 
 /**
  * @module exports the Asteroid class
@@ -205,7 +253,7 @@ function Asteroid(position, canvas, randomNumPoints, size,  color, steerRight, s
       break;
     case 4:
       this.height = (20 + this.size) - 10;
-      this.width = (10 + this.size) - (-10 - this.size);
+      this.width = (5 + this.size) - (-5 - this.size);  // this is cut in half
       break;
     case 5:
       this.height = (20 + this.size) - 5;
@@ -267,7 +315,7 @@ Asteroid.prototype.update = function(time) {
  */
 Asteroid.prototype.render = function(time, ctx) {
   ctx.save();
-  
+
   ctx.translate(this.position.x, this.position.y);
   ctx.rotate(-this.angle);
   
@@ -275,28 +323,25 @@ Asteroid.prototype.render = function(time, ctx) {
   var size = this.size;
   var numPoints = this.randomNumPoints;
   
-  // Draw an asteroid based on its number of points
+  // Draw an polygon shaped asteroid based on its number of points
   switch(numPoints)
   {
+    // 3 points (triangle)
     case 3:
       ctx.moveTo(0, 20 + size);
       ctx.lineTo(5 + size, 10); 
       ctx.lineTo(10 + size, 15);  
       ctx.closePath();
-
-      //console.log("3 points size: " + this.size);
-      //console.log("3 points height: " + this.height + "width: " + this.width);
       break;
+    // 4 points
     case 4:
       ctx.moveTo(0, 20 + size);
       ctx.lineTo(10 + size, 15);
       ctx.lineTo(5, 10);
       ctx.lineTo(-10 - size, 10);
       ctx.closePath();
-      
-      //console.log("4 points size: " + this.size);
-      //console.log("4 points height: " + this.height + "width: " + this.width);
       break;
+    // 5 points
     case 5:
       ctx.moveTo(0, 20 + size);
       ctx.lineTo(10 + size, 15);
@@ -304,10 +349,6 @@ Asteroid.prototype.render = function(time, ctx) {
       ctx.lineTo(-5 - size, 5);
       ctx.lineTo(-10 - size, 10);
       ctx.closePath();
-
-    
-      //console.log("5 points size: " + this.size);
-      //console.log("5 points height: " + this.height + "width: " + this.width);
       break;
   }  
   ctx.strokeStyle = this.color;
@@ -377,7 +418,7 @@ Game.prototype.loop = function(newTime) {
 },{}],4:[function(require,module,exports){
 "use strict";
 
-const MS_PER_FRAME = 1000/8;
+const MS_PER_FRAME = 1000/16;
 
 /**
  * @module exports the Player class
@@ -406,6 +447,9 @@ function Player(position, canvas) {
   this.thrusting = false;
   this.steerLeft = false;
   this.steerRight = false;
+
+  this.height = 5;
+  this.width = 5;
 
   var self = this;
   window.onkeydown = function(event) {
@@ -463,8 +507,8 @@ Player.prototype.update = function(time) {
       x: Math.sin(this.angle),
       y: Math.cos(this.angle)
     }
-    this.velocity.x -= acceleration.x/4;
-    this.velocity.y -= acceleration.y/4;
+    this.velocity.x -= acceleration.x/16;
+    this.velocity.y -= acceleration.y/16;
   }
   // Apply velocity
   this.position.x += this.velocity.x;
@@ -483,32 +527,35 @@ Player.prototype.update = function(time) {
  * {DOMHighResTimeStamp} time the elapsed time since the last frame
  * {CanvasRenderingContext2D} ctx the context to render into
  */
-Player.prototype.render = function(time, ctx) {
-  ctx.save();
+Player.prototype.render = function(time, ctx, gameOver) {
+  if(!gameOver)
+  {
+    ctx.save();
 
-  // Draw player's ship
-  ctx.translate(this.position.x, this.position.y);
-  ctx.rotate(-this.angle);
-  ctx.beginPath();
-  ctx.moveTo(0, -10);
-  ctx.lineTo(-10, 10);
-  ctx.lineTo(0, 0);
-  ctx.lineTo(10, 10);
-  ctx.closePath();
-  ctx.strokeStyle = 'white';
-  ctx.stroke();
-
-  // Draw engine thrust
-  if(this.thrusting) {
+    // Draw player's ship
+    ctx.translate(this.position.x, this.position.y);
+    ctx.rotate(-this.angle);
     ctx.beginPath();
-    ctx.moveTo(0, 20);
-    ctx.lineTo(5, 10);
-    ctx.arc(0, 10, 5, 0, Math.PI, true);
+    ctx.moveTo(0, -10);
+    ctx.lineTo(-10, 10);
+    ctx.lineTo(0, 0);
+    ctx.lineTo(10, 10);
     ctx.closePath();
-    ctx.strokeStyle = 'orange';
+    ctx.strokeStyle = 'white';
     ctx.stroke();
+
+    // Draw engine thrust
+    if(this.thrusting) {
+      ctx.beginPath();
+      ctx.moveTo(0, 20);
+      ctx.lineTo(5, 10);
+      ctx.arc(0, 10, 5, 0, Math.PI, true);
+      ctx.closePath();
+      ctx.strokeStyle = 'orange';
+      ctx.stroke();
+    }
+    ctx.restore();
   }
-  ctx.restore();
 }
 
 },{}]},{},[1]);

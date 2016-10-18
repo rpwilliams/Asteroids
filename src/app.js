@@ -1,3 +1,4 @@
+
 "use strict;"
 
 /* Classes */
@@ -10,6 +11,12 @@ var canvas = document.getElementById('screen');
 var game = new Game(canvas, update, render);
 var player = new Player({x: canvas.width/2, y: canvas.height/2}, canvas);
 var asteroids = [];
+var gameOver = false;
+var numAsteroids = 10;
+
+var lives = 3;
+var score = 0;
+var level = 1;
 
 const MINIMUM_POINTS = 3;
 const MAXIMUM_POINTS = 6;  // Max is actually 5 because it is non inclusive
@@ -40,7 +47,6 @@ function loopBackgroundMusic()
 loopBackgroundMusic();
 
 function init() {
-  var numAsteroids = 20;
   createAsteroids(numAsteroids);
 }
 init();
@@ -95,22 +101,58 @@ masterLoop(performance.now());
  * the number of milliseconds passed since the last frame.
  */
 function update(elapsedTime) {
-  player.update(elapsedTime);
-
-  // TODO: Update the game objects
-  for(var i = 0; i < asteroids.length; i++)
+  document.getElementById('score').innerHTML = "Score: " + score;
+  document.getElementById('level').innerHTML = "Level: " + level;
+  document.getElementById('lives').innerHTML = "Lives: " + lives;
+  if(!gameOver)
   {
-    asteroids[i].update(elapsedTime);
-    for(var j = i+1; j < asteroids.length; j++)
+    player.update(elapsedTime);
+    for(var i =0; i < asteroids.length; i++)
     {
-      if(boundingBoxCollision(asteroids[i], asteroids[j]))
+      if(boundingBoxCollision(asteroids[i], player))
       {
-        asteroids[i].color = 'red';
-        asteroids[j].color = 'red';
-        console.log("Collision detected!");
+        console.log("Player collision detected!");
+        stop();
+      }
+    }
+    // TODO: Update the game objects
+    for(var i = 0; i < asteroids.length; i++)
+    {
+      asteroids[i].update(elapsedTime);
+      for(var j = i+1; j < asteroids.length; j++)
+      {
+        // Asteroid to asteroid collision
+        if(boundingBoxCollision(asteroids[i], asteroids[j]))
+        {
+          asteroids[i].color = 'red';
+          asteroids[j].color = 'red';
+        }
       }
     }
   }
+  else
+  {
+    if(lives > 0)
+    {
+      //document.getElementById('final').innerHTML = "Final Score: " + score;
+      //document.getElementById('try again').innerHTML = "<b>Press space to continue</b>";
+      asteroids = [];
+      init();
+      gameOver = false;
+      player.position.x = 380;
+      player.position.y = 240;
+      player.velocity.x = 0;
+      player.velocity.y = 0;
+      console.log("Lives: " + lives);
+    }
+    else
+    {
+      asteroids = [];
+      document.getElementById('game over').innerHTML = "Game Over";
+      document.getElementById('final').innerHTML = "Final Score: " + score;    
+    }
+  }
+      
 }
 
 /**
@@ -130,7 +172,7 @@ function render(elapsedTime, ctx) {
   img.src = "static/stars.jpg";
   ctx.drawImage(img, -20, -20);
   // Render the player
-  player.render(elapsedTime, ctx);
+  player.render(elapsedTime, ctx, gameOver);
   // Render the asteroid
   for(var i = 0; i < asteroids.length; i++)
   {
@@ -155,3 +197,10 @@ function boundingBoxCollision(a, b)
     );
 }
 
+function stop()
+{
+  var audio = new Audio('static/player_death.wav'); // Created with http://www.bfxr.net/
+  audio.play();
+  lives--;
+  gameOver = true;
+}

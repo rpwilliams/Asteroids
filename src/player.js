@@ -1,6 +1,6 @@
 "use strict";
 
-const MS_PER_FRAME = 1000/8;
+const MS_PER_FRAME = 1000/16;
 
 /**
  * @module exports the Player class
@@ -29,6 +29,9 @@ function Player(position, canvas) {
   this.thrusting = false;
   this.steerLeft = false;
   this.steerRight = false;
+
+  this.height = 5;
+  this.width = 5;
 
   var self = this;
   window.onkeydown = function(event) {
@@ -86,8 +89,8 @@ Player.prototype.update = function(time) {
       x: Math.sin(this.angle),
       y: Math.cos(this.angle)
     }
-    this.velocity.x -= acceleration.x/4;
-    this.velocity.y -= acceleration.y/4;
+    this.velocity.x -= acceleration.x/16;
+    this.velocity.y -= acceleration.y/16;
   }
   // Apply velocity
   this.position.x += this.velocity.x;
@@ -106,30 +109,33 @@ Player.prototype.update = function(time) {
  * {DOMHighResTimeStamp} time the elapsed time since the last frame
  * {CanvasRenderingContext2D} ctx the context to render into
  */
-Player.prototype.render = function(time, ctx) {
-  ctx.save();
+Player.prototype.render = function(time, ctx, gameOver) {
+  if(!gameOver)
+  {
+    ctx.save();
 
-  // Draw player's ship
-  ctx.translate(this.position.x, this.position.y);
-  ctx.rotate(-this.angle);
-  ctx.beginPath();
-  ctx.moveTo(0, -10);
-  ctx.lineTo(-10, 10);
-  ctx.lineTo(0, 0);
-  ctx.lineTo(10, 10);
-  ctx.closePath();
-  ctx.strokeStyle = 'white';
-  ctx.stroke();
-
-  // Draw engine thrust
-  if(this.thrusting) {
+    // Draw player's ship
+    ctx.translate(this.position.x, this.position.y);
+    ctx.rotate(-this.angle);
     ctx.beginPath();
-    ctx.moveTo(0, 20);
-    ctx.lineTo(5, 10);
-    ctx.arc(0, 10, 5, 0, Math.PI, true);
+    ctx.moveTo(0, -10);
+    ctx.lineTo(-10, 10);
+    ctx.lineTo(0, 0);
+    ctx.lineTo(10, 10);
     ctx.closePath();
-    ctx.strokeStyle = 'orange';
+    ctx.strokeStyle = 'white';
     ctx.stroke();
+
+    // Draw engine thrust
+    if(this.thrusting) {
+      ctx.beginPath();
+      ctx.moveTo(0, 20);
+      ctx.lineTo(5, 10);
+      ctx.arc(0, 10, 5, 0, Math.PI, true);
+      ctx.closePath();
+      ctx.strokeStyle = 'orange';
+      ctx.stroke();
+    }
+    ctx.restore();
   }
-  ctx.restore();
 }

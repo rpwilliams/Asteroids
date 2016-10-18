@@ -1,6 +1,6 @@
 "use strict";
 
-const MS_PER_FRAME = 1000/8;
+const MS_PER_FRAME = 1000/16;
 
 /**
  * @module exports the Asteroid class
@@ -45,7 +45,7 @@ function Asteroid(position, canvas, randomNumPoints, size,  color, steerRight, s
       break;
     case 4:
       this.height = (20 + this.size) - 10;
-      this.width = (10 + this.size) - (-10 - this.size);
+      this.width = (5 + this.size) - (-5 - this.size);  // this is cut in half
       break;
     case 5:
       this.height = (20 + this.size) - 5;
