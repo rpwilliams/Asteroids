@@ -12,14 +12,14 @@ module.exports = exports = Asteroid;
  * Creates a new Asteroid object
  * @param {Postition} position object specifying an x and y
  */
-function Asteroid(position, canvas, randomNumPoints, size, angle) {
+function Asteroid(position, canvas, randomNumPoints, size,  color, steerRight, steerLeft) {
   this.worldWidth = canvas.width;
   this.worldHeight = canvas.height;
   this.initialAcceleration = true; 
   this.state = "moving";
   this.randomNumPoints = randomNumPoints;
 
-  // Use random number between 1 - 4 to determine asteroid size increase
+  // Use a random number between 1 - 4 to determine asteroid size increase
   switch(size)
   {
     case 1:
@@ -36,15 +36,15 @@ function Asteroid(position, canvas, randomNumPoints, size, angle) {
       break;
   }
 
-  // Calculate the height and width of the asteroid
+  // Calculate the height and width of the asteroid for the rectanglular collisions
   switch(randomNumPoints)
   {
     case 3:
-      this.height = (20 + this.size) - (15);
-      this.width = (10 + this.size) - (5 + this.size);
+      this.height = (10 + this.size);
+      this.width = (20 + this.size) - (10);
       break;
     case 4:
-      this.height = (20 + this.size) - 5;
+      this.height = (20 + this.size) - 10;
       this.width = (10 + this.size) - (-10 - this.size);
       break;
     case 5:
@@ -61,34 +61,12 @@ function Asteroid(position, canvas, randomNumPoints, size, angle) {
     x: 0,
     y: 0
   }
-  this.angle = angle;
+  this.angle = 0;
   this.radius  = 64;
-  //this.thrusting = false;
-
-  // if(right && left)
-  // {
-  //   this.steerRight = true;
-  //   this.steerLeft = true;
-  // }
-  // else if(left)
-  // {
-  //   this.steerLeft = true;
-  //   this.steerRight = false;
-  // }
-  // else if(right)
-  // {
-  //   this.steerRight = true;
-  //   this.steerLeft = false;
-  // }
-  this.steerRight = true;
-  this.steerLeft = true;
-  
-
-  // Calculate the mass
-  // this.mass = this.size * this.this.randomNumPoints;
+  this.color = color;
+  this.steerRight = steerRight;
+  this.steerLeft = steerLeft;
 }
-
-
 
 /**
  * @function updates the Asteroid object
@@ -120,8 +98,6 @@ Asteroid.prototype.update = function(time) {
   if(this.position.x > this.worldWidth) this.position.x -= this.worldWidth;
   if(this.position.y < 0) this.position.y += this.worldHeight;
   if(this.position.y > this.worldHeight) this.position.y -= this.worldHeight;
-
-  
 }
 
 /**
@@ -129,38 +105,35 @@ Asteroid.prototype.update = function(time) {
  * {DOMHighResTimeStamp} time the elapsed time since the last frame
  * {CanvasRenderingContext2D} ctx the context to render into
  */
-Asteroid.prototype.render = function(time, ctx, color) {
+Asteroid.prototype.render = function(time, ctx) {
   ctx.save();
 
-  // Draw Asteroid's ship
   ctx.translate(this.position.x, this.position.y);
   ctx.rotate(-this.angle);
   
   ctx.beginPath();
   var size = this.size;
-  var numPoints = this.randomNumPoints
+  var numPoints = this.randomNumPoints;
   
+  // Draw an polygon shaped asteroid based on its number of points
   switch(numPoints)
   {
+    // 3 points (triangle)
     case 3:
       ctx.moveTo(0, 20 + size);
       ctx.lineTo(5 + size, 10); 
       ctx.lineTo(10 + size, 15);  
       ctx.closePath();
-
-      //console.log("3 points size: " + this.size);
-      //console.log("3 points height: " + this.height + "width: " + this.width);
       break;
+    // 4 points
     case 4:
       ctx.moveTo(0, 20 + size);
       ctx.lineTo(10 + size, 15);
       ctx.lineTo(5, 10);
       ctx.lineTo(-10 - size, 10);
       ctx.closePath();
-      
-      //console.log("4 points size: " + this.size);
-      //console.log("4 points height: " + this.height + "width: " + this.width);
       break;
+    // 5 points
     case 5:
       ctx.moveTo(0, 20 + size);
       ctx.lineTo(10 + size, 15);
@@ -168,21 +141,10 @@ Asteroid.prototype.render = function(time, ctx, color) {
       ctx.lineTo(-5 - size, 5);
       ctx.lineTo(-10 - size, 10);
       ctx.closePath();
-
-    
-      //console.log("5 points size: " + this.size);
-      //console.log("5 points height: " + this.height + "width: " + this.width);
       break;
-  }
-  
-  //ctx.arc(0, 15, 10, 0, Math.PI, true);
-  //ctx.arc(0, 10, 5, 0, Math.PI, true);
-   
-  ctx.strokeStyle = color;
+  }  
+  ctx.strokeStyle = this.color;
   ctx.stroke();
-
-  
-
   ctx.restore();
 }
 
