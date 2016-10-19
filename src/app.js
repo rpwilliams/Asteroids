@@ -15,7 +15,7 @@ var asteroids = [];
 var bullets = [];
 
 var gameOver = false;
-var numAsteroids = 10;
+var numAsteroids = 20;
 var lives = 3;
 var score = 0;
 var level = 1;
@@ -140,19 +140,20 @@ function update(elapsedTime) {
     if(player.fire)
     {
       shoot(player);
-      // Only include the active bullets
-      bullets = bullets.filter(function(bullet){ return bullet.active; });
+      // Only include the active bullets   
     }
 
     bullets.forEach(function(bullet) {
       asteroids.forEach(function(asteroid) {
         if(collides(bullet, asteroid)) {
           destroy(asteroid);
-          console.log("The size of the bullet you just hit is " + asteroid.size);
+          console.log("You just destroyed an asteroid");
+          bullet.active = false;
         }
       });
     });
 
+    bullets = bullets.filter(function(bullet){ return bullet.active; });
     asteroids = asteroids.filter(function(asteroid){ return asteroid.active; });
 
     // Check for player to asteroid collision
@@ -178,9 +179,13 @@ function update(elapsedTime) {
       {
         if(collides(asteroids[i], asteroids[j]))
         {
-          asteroids[i].color = "red";
-          asteroids[j].color = "red";
+          asteroids[i].color = 'red';
+          asteroids[j].color = 'red';
+          destroy(asteroids[i]);
+          destroy(asteroids[j]);
           console.log("Asteroid collision!");
+          break;
+          
         }
       }
     }
@@ -299,16 +304,17 @@ function shoot(player)
     ));
 }
 
-function destroy(asteroid, fromBullet)
+function destroy(asteroid)
 {
-  if(asteroid.size == ASTEROID_SIZE_1 && fromBullet)
+  var audio = new Audio('static/asteroid_death.wav'); // Created with http://www.bfxr.net/
+  audio.play();
+
+  if(asteroid.size == ASTEROID_SIZE_1)
   {
-    console.log(asteroid.size);
     asteroid.active = false;  // eliminate the asteroid
   }
   else if(asteroid.size == ASTEROID_SIZE_2)
   {
-    console.log(asteroid.size);
     asteroids.push(new Asteroid({x: asteroid.position.x + 20, y: asteroid.position.y},
      canvas, asteroid.randomNumPoints, ASTEROID_SIZE_1, asteroid.color, true, true));
     asteroids.push(new Asteroid({x: asteroid.position.x - 20, y: asteroid.position.y},
@@ -317,7 +323,6 @@ function destroy(asteroid, fromBullet)
   }
   else if(asteroid.size == ASTEROID_SIZE_3)
   {
-    console.log(asteroid.size);
     asteroids.push(new Asteroid({x: asteroid.position.x + 20,y: asteroid.position.y},
      canvas, asteroid.randomNumPoints, ASTEROID_SIZE_2, asteroid.color, true, true));
     asteroids.push(new Asteroid({x: asteroid.position.x - 20,y: asteroid.position.y},
@@ -326,7 +331,6 @@ function destroy(asteroid, fromBullet)
   } 
   else if(asteroid.size == ASTEROID_SIZE_4)
   {
-    console.log(asteroid.size);
    asteroids.push(new Asteroid({x: asteroid.position.x + 20,y: asteroid.position.y},
     canvas, asteroid.randomNumPoints, ASTEROID_SIZE_3, asteroid.color, true, true));
     asteroids.push(new Asteroid({x: asteroid.position.x - 20, y: asteroid.position.y},
