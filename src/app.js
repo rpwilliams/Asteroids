@@ -13,15 +13,15 @@ var game = new Game(canvas, update, render);
 var player = new Player({x: canvas.width/2, y: canvas.height/2}, canvas);
 var asteroids = [];
 var bullets = [];
-
 var gameOver = false;
 var numAsteroids = 10;
 var lives = 3;
 var level = 1;
 var score = 0;
 
+/* Constant variables */
 const MINIMUM_POINTS = 3;
-const MAXIMUM_POINTS = 6;  // Max is actually 5 because it is non inclusive
+const MAXIMUM_POINTS = 6;  // The max points is actually 5 because it is non inclusive
 const MAXIMUM_SIZE = 5;
 const MINIMUM_SIZE = 1;
 const ASTEROID_SIZE_1 = 0;
@@ -29,6 +29,12 @@ const ASTEROID_SIZE_2 = 5;
 const ASTEROID_SIZE_3 = 10;
 const ASTEROID_SIZE_4 = 20;
 
+/**
+ * @function loopBackgroundMusic
+ * Background music is used under the creative commons license
+ * by Tristan_Lohengrin
+ * http://www.freesound.org/people/Tristan_Lohengrin/sounds/340485/
+ */
 function loopBackgroundMusic()
 {
   /*
@@ -37,7 +43,6 @@ function loopBackgroundMusic()
     http://www.freesound.org/people/Tristan_Lohengrin/sounds/340485/
   */
   var backgroundMusic = new Audio('static/asteroids_music.wav');
-  /* Loop the music */
   if (typeof backgroundMusic.loop == 'boolean')
   {
       backgroundMusic.loop = true;
@@ -126,7 +131,7 @@ masterLoop(performance.now());
  * the number of milliseconds passed since the last frame.
  */
 function update(elapsedTime) {
-  console.log("Number of asteroids: " + asteroids.length);
+  /* HTML overlays */
   document.getElementById('score').innerHTML = "Score: " + score;
   document.getElementById('level').innerHTML = "Level: " + level;
   document.getElementById('lives').innerHTML = "Lives: " + lives;
@@ -137,35 +142,39 @@ function update(elapsedTime) {
     if(asteroids.length == 0)
     {
       level++;
-      //document.getElementById('nextLevel').innerHTML = "Level: " + level;
       numAsteroids += 3;
       init();
     }
+
+    // Update the player
     player.update(elapsedTime);
 
+    // Update the bullets
     for(var i = 0; i < bullets.length; i++)
     {
       bullets[i].update(elapsedTime);
     }    
 
+    // Check if a player has the space bar pressed
     if(player.fire)
     {
-      shoot(player);
-      // Only include the active bullets   
+      shoot(player); 
     }
 
+    // Check for collisions between bullets and asteroids
     bullets.forEach(function(bullet) {
       asteroids.forEach(function(asteroid) {
         if(collides(bullet, asteroid)) {
-          destroy(asteroid);
+          destroy(asteroid, true);  // Decrease the asteroid's size
           console.log("You just destroyed an asteroid");
-          bullet.active = false;
+          bullet.active = false;  
         }
       });
     });
 
-    bullets = bullets.filter(function(bullet){ return bullet.active; });
-    asteroids = asteroids.filter(function(asteroid){ return asteroid.active; });
+    /* Remove unwanted bullets and asteroids */
+    bullets = bullets.filter(function(bullet){ return bullet.active; });  
+    asteroids = asteroids.filter(function(asteroid){ return asteroid.active; }); 
 
     // Check for player to asteroid collision
     for(var i =0; i < asteroids.length; i++)
@@ -173,7 +182,7 @@ function update(elapsedTime) {
       if(boundingBoxCollision(asteroids[i], player))
       {
         console.log("Player collision!");
-        stop();
+        stop(); 
       }
     }
 
@@ -183,19 +192,31 @@ function update(elapsedTime) {
       asteroids[i].update(elapsedTime);
     }
 
-    // Check for asteroid to asteroid collision
+    /*
+     Check for asteroid to asteroid collision.
+      There is a problem with this. Since an asteroid on an asteroid will always
+      evaluate to true with each iteration until they are seperated, thousands of new
+      asteroids would be created. 
+
+      Therefore, this will only check if BOTH of the asteroids have never had a collision
+      before. If they haven't, they will break apart.
+      */
     for(var i = 0; i < asteroids.length; i++)
     {
       for(var j = i+1; j < asteroids.length; j++)
       {
         if(collides(asteroids[i], asteroids[j]))
         {
-          asteroids[i].color = 'red';
-          asteroids[j].color = 'red';
-          destroy(asteroids[i]);
-          destroy(asteroids[j]);
+          // asteroid[i].color = 'red';
+          // asteroid[j].color = 'red';
+          if(!asteroids[i].previousllyCollided && !asteroids[j].previousllyCollided)
+          {
+            destroy(asteroids[i], false);
+            destroy(asteroids[j], false);
+          }
+          asteroids[i].previousllyCollided = true;
+          asteroids[j].previousllyCollided = true;
           console.log("Asteroid collision!");
-          break;
         }
       }
     }
@@ -204,8 +225,6 @@ function update(elapsedTime) {
   {
     if(lives > 0)
     {
-      //document.getElementById('final').innerHTML = "Final Score: " + score;
-      //document.getElementById('try again').innerHTML = "<b>Press space to continue</b>";
       asteroids = [];
       init();
       gameOver = false;
@@ -255,6 +274,11 @@ function render(elapsedTime, ctx) {
   }
 }
 
+/* 
+  The following 2 functions likely do the same thing, but I did not have time to test them.
+*/
+
+
 /**
   * @function boundingBoxCollisions
   * Checks for a collision by drawing a box around the shape
@@ -272,6 +296,13 @@ function boundingBoxCollision(a, b)
     );
 }
 
+/**
+  * @function collide
+  * Checks for a collision between rectangles
+  * @param {a} the first asteroid
+  * @param {b} the second asteroid
+  * @return false if no collision, true if collision
+  */
 function collides(a, b) {
   if(a === undefined || b === undefined
     || a === undefined || b === undefined)
@@ -289,6 +320,10 @@ function collides(a, b) {
          a.position.y + a.height > b.position.y;
 }
 
+/**
+  * @function stop
+  * Decreases lives, players player death sound, stop game if lives is not 3
+  */
 function stop()
 {
   var audio = new Audio('static/player_death.wav'); // Created with http://www.bfxr.net/
@@ -297,6 +332,11 @@ function stop()
   gameOver = true;
 }
 
+/**
+  * @function shoot
+  * Shoots a bullet in the direction the player is pointing
+  * @param {player} the player object
+  */
 function shoot(player)
 {
   var now = Date.now();
@@ -314,19 +354,26 @@ function shoot(player)
     ));
 }
 
-function destroy(asteroid)
+/**
+  * @function destroy
+  * Deletes an asteroid by disabling it, then creates 2 smaller asteroids 
+  * in the same location, moving in opposite directions.
+  * If the asteroid is the smallest possible size it will be removed with no new asteroids.
+  * @param {asteroid} the asteroid being destroyed
+  * @param {isBullet} true if this is being used by a bullet to destroy the asteroid, false otherwise
+  */
+function destroy(asteroid, isBullet)
 {
   var audio = new Audio('static/asteroid_death.wav'); // Created with http://www.bfxr.net/
   audio.play();
 
-  if(asteroid.size == ASTEROID_SIZE_1)
+  if(asteroid.size == ASTEROID_SIZE_1 && isBullet)
   {
     score += 5;
     asteroid.active = false;  // eliminate the asteroid
   }
   else if(asteroid.size == ASTEROID_SIZE_2)
   {
-    score++;
     asteroids.push(new Asteroid({x: asteroid.position.x + 20, y: asteroid.position.y},
      canvas, asteroid.randomNumPoints, ASTEROID_SIZE_1, asteroid.color, true, true));
     asteroids.push(new Asteroid({x: asteroid.position.x - 20, y: asteroid.position.y},
@@ -335,7 +382,6 @@ function destroy(asteroid)
   }
   else if(asteroid.size == ASTEROID_SIZE_3)
   {
-    score++;
     asteroids.push(new Asteroid({x: asteroid.position.x + 20,y: asteroid.position.y},
      canvas, asteroid.randomNumPoints, ASTEROID_SIZE_2, asteroid.color, true, true));
     asteroids.push(new Asteroid({x: asteroid.position.x - 20,y: asteroid.position.y},
@@ -344,7 +390,6 @@ function destroy(asteroid)
   } 
   else if(asteroid.size == ASTEROID_SIZE_4)
   {
-    score++;
    asteroids.push(new Asteroid({x: asteroid.position.x + 20,y: asteroid.position.y},
     canvas, asteroid.randomNumPoints, ASTEROID_SIZE_3, asteroid.color, true, true));
     asteroids.push(new Asteroid({x: asteroid.position.x - 20, y: asteroid.position.y},

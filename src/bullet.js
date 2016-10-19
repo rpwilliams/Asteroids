@@ -15,7 +15,6 @@ module.exports = exports = Bullet;
 function Bullet(position, canvas, angle) {
   this.worldWidth = canvas.width;
   this.worldHeight = canvas.height;
-  
   this.active = true;
   this.height = 3;
   this.width = 3;
@@ -38,8 +37,6 @@ function Bullet(position, canvas, angle) {
       this.position.y >= 0 && this.position.y <= this.worldHeight;
   }
 }
-
-
 
 /**
  * @function updates the Bullet object

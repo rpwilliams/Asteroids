@@ -91,8 +91,6 @@ function Player(position, canvas) {
   }
 }
 
-
-
 /**
  * @function updates the player object
  * {DOMHighResTimeStamp} time the elapsed time since the last frame
@@ -111,8 +109,8 @@ Player.prototype.update = function(time) {
       x: Math.sin(this.angle),
       y: Math.cos(this.angle)
     }
-    this.velocity.x -= acceleration.x/16;
-    this.velocity.y -= acceleration.y/16;
+    this.velocity.x -= acceleration.x/12;
+    this.velocity.y -= acceleration.y/12;
   }
   // Apply velocity
   this.position.x += this.velocity.x;

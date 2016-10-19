@@ -20,6 +20,7 @@ function Asteroid(position, canvas, randomNumPoints, size,  color, steerRight, s
   this.randomNumPoints = randomNumPoints;
   this.active = true;
   this.size = size;
+  this.previouslyCollided = false;  // Can have a collision with another asteroid a max of 1 times
 
   // Calculate the height and width of the asteroid for the rectanglular collisions
   switch(randomNumPoints)
