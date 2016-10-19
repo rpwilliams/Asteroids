@@ -1,6 +1,6 @@
 "use strict";
 
-const MS_PER_FRAME = 1000/16;
+const MS_PER_FRAME = 1000/8;
 
 /**
  * @module exports the Asteroid class
@@ -18,23 +18,8 @@ function Asteroid(position, canvas, randomNumPoints, size,  color, steerRight, s
   this.initialAcceleration = true; 
   this.state = "moving";
   this.randomNumPoints = randomNumPoints;
-
-  // Use a random number between 1 - 4 to determine asteroid size increase
-  switch(size)
-  {
-    case 1:
-      this.size = 0;
-      break;
-    case 2:
-      this.size = 5;
-      break;
-    case 3:
-      this.size = 10;
-      break;
-    case 4:
-      this.size = 20;
-      break;
-  }
+  this.active = true;
+  this.size = size;
 
   // Calculate the height and width of the asteroid for the rectanglular collisions
   switch(randomNumPoints)
@@ -50,6 +35,10 @@ function Asteroid(position, canvas, randomNumPoints, size,  color, steerRight, s
     case 5:
       this.height = (20 + this.size) - 5;
       this.width = (10 + this.size) - (-10 - this.size);
+      break;
+    default:
+      this.height = (10 + this.size);
+      this.width = (20 + this.size) - (10);
       break;
   }
   
@@ -98,6 +87,9 @@ Asteroid.prototype.update = function(time) {
   if(this.position.x > this.worldWidth) this.position.x -= this.worldWidth;
   if(this.position.y < 0) this.position.y += this.worldHeight;
   if(this.position.y > this.worldHeight) this.position.y -= this.worldHeight;
+
+  // Check if size is less than 0
+  this.active = this.active && this.size >= 0;
 }
 
 /**

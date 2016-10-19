@@ -25,6 +25,10 @@ const MINIMUM_POINTS = 3;
 const MAXIMUM_POINTS = 6;  // Max is actually 5 because it is non inclusive
 const MAXIMUM_SIZE = 5;
 const MINIMUM_SIZE = 1;
+const ASTEROID_SIZE_1 = 0;
+const ASTEROID_SIZE_2 = 5;
+const ASTEROID_SIZE_3 = 10;
+const ASTEROID_SIZE_4 = 20;
 
 function loopBackgroundMusic()
 {
@@ -78,8 +82,26 @@ function createAsteroids(numAsteroids)
       steerLeft = false;
     }
 
+  // Use a random number between 1 - 4 to determine asteroid size increase
+  var size = 0;
+  switch(randomSize)
+  {
+    case 1:
+      size = ASTEROID_SIZE_1;
+      break;
+    case 2:
+      size = ASTEROID_SIZE_2;
+      break;
+    case 3:
+      size = ASTEROID_SIZE_3;
+      break;
+    case 4:
+      size = ASTEROID_SIZE_4;
+      break;
+  }
+
     asteroids.push(new Asteroid({x: randomX, y: randomY}, canvas, 
-      randomNumPoints, randomSize, 'white', steerRight, steerLeft));
+      randomNumPoints, size, 'white', steerRight, steerLeft));
   }
 }
 
@@ -111,38 +133,55 @@ function update(elapsedTime) {
   {
     player.update(elapsedTime);
 
-    if(player.fire)
-    {
-      shoot(player);
-    }
-
     for(var i = 0; i < bullets.length; i++)
     {
       bullets[i].update(elapsedTime);
     }    
 
-    // Only include the active bullets
-    bullets = bullets.filter(function(bullet){ return bullet.active; });
+    if(player.fire)
+    {
+      shoot(player);
+      // Only include the active bullets
+      bullets = bullets.filter(function(bullet){ return bullet.active; });
+    }
+
+    bullets.forEach(function(bullet) {
+      asteroids.forEach(function(asteroid) {
+        if(collides(bullet, asteroid)) {
+          destroy(asteroid);
+          console.log("The size of the bullet you just hit is " + asteroid.size);
+        }
+      });
+    });
+
+    asteroids = asteroids.filter(function(asteroid){ return asteroid.active; });
 
     // Check for player to asteroid collision
     for(var i =0; i < asteroids.length; i++)
     {
       if(boundingBoxCollision(asteroids[i], player))
       {
-        console.log("Player collision detected!");
+        console.log("Player collision!");
         stop();
       }
     }
-    // Check for asteroid to asteroid collision
+
+    // update asteroids
     for(var i = 0; i < asteroids.length; i++)
     {
       asteroids[i].update(elapsedTime);
+    }
+
+    // Check for asteroid to asteroid collision
+    for(var i = 0; i < asteroids.length; i++)
+    {
       for(var j = i+1; j < asteroids.length; j++)
       {
-        if(boundingBoxCollision(asteroids[i], asteroids[j]))
+        if(collides(asteroids[i], asteroids[j]))
         {
-          asteroids[i].color = 'red';
-          asteroids[j].color = 'red';
+          asteroids[i].color = "red";
+          asteroids[j].color = "red";
+          console.log("Asteroid collision!");
         }
       }
     }
@@ -219,6 +258,23 @@ function boundingBoxCollision(a, b)
     );
 }
 
+function collides(a, b) {
+  if(a === undefined || b === undefined
+    || a === undefined || b === undefined)
+  {
+    return;
+  }
+  if(a.position === undefined || b.position === undefined
+    || a.position === undefined || b.position === undefined)
+  {
+    return;
+  }
+  return a.position.x < b.position.x + b.width &&
+         a.position.x + a.width > b.position.x &&
+         a.position.y < b.position.y + b.height &&
+         a.position.y + a.height > b.position.y;
+}
+
 function stop()
 {
   var audio = new Audio('static/player_death.wav'); // Created with http://www.bfxr.net/
@@ -243,10 +299,46 @@ function shoot(player)
     canvas, player.angle
     ));
 }
+
+function destroy(asteroid)
+{
+  if(asteroid.size == ASTEROID_SIZE_1)
+  {
+    console.log(asteroid.size);
+    asteroid.active = false;  // eliminate the asteroid
+  }
+  else if(asteroid.size == ASTEROID_SIZE_2)
+  {
+    console.log(asteroid.size);
+    asteroids.push(new Asteroid({x: asteroid.position.x + 20, y: asteroid.position.y},
+     canvas, asteroid.randomNumPoints, ASTEROID_SIZE_1, asteroid.color, true, true));
+    asteroids.push(new Asteroid({x: asteroid.position.x - 20, y: asteroid.position.y},
+     canvas, asteroid.randomNumPoints, ASTEROID_SIZE_1, asteroid.color, false, false));
+    asteroid.active = false;
+  }
+  else if(asteroid.size == ASTEROID_SIZE_3)
+  {
+    console.log(asteroid.size);
+    asteroids.push(new Asteroid({x: asteroid.position.x + 20,y: asteroid.position.y},
+     canvas, asteroid.randomNumPoints, ASTEROID_SIZE_2, asteroid.color, true, true));
+    asteroids.push(new Asteroid({x: asteroid.position.x - 20,y: asteroid.position.y},
+     canvas, asteroid.randomNumPoints, ASTEROID_SIZE_2, asteroid.color, false, false));
+    asteroid.active = false;
+  } 
+  else if(asteroid.size == ASTEROID_SIZE_4)
+  {
+    console.log(asteroid.size);
+   asteroids.push(new Asteroid({x: asteroid.position.x + 20,y: asteroid.position.y},
+    canvas, asteroid.randomNumPoints, ASTEROID_SIZE_3, asteroid.color, true, true));
+    asteroids.push(new Asteroid({x: asteroid.position.x - 20, y: asteroid.position.y},
+     canvas, asteroid.randomNumPoints, ASTEROID_SIZE_3, asteroid.color, false, false));
+    asteroid.active = false;
+  }  
+}
 },{"./asteroid.js":2,"./bullet.js":3,"./game.js":4,"./player.js":5}],2:[function(require,module,exports){
 "use strict";
 
-const MS_PER_FRAME = 1000/16;
+const MS_PER_FRAME = 1000/8;
 
 /**
  * @module exports the Asteroid class
@@ -264,23 +356,8 @@ function Asteroid(position, canvas, randomNumPoints, size,  color, steerRight, s
   this.initialAcceleration = true; 
   this.state = "moving";
   this.randomNumPoints = randomNumPoints;
-
-  // Use a random number between 1 - 4 to determine asteroid size increase
-  switch(size)
-  {
-    case 1:
-      this.size = 0;
-      break;
-    case 2:
-      this.size = 5;
-      break;
-    case 3:
-      this.size = 10;
-      break;
-    case 4:
-      this.size = 20;
-      break;
-  }
+  this.active = true;
+  this.size = size;
 
   // Calculate the height and width of the asteroid for the rectanglular collisions
   switch(randomNumPoints)
@@ -296,6 +373,10 @@ function Asteroid(position, canvas, randomNumPoints, size,  color, steerRight, s
     case 5:
       this.height = (20 + this.size) - 5;
       this.width = (10 + this.size) - (-10 - this.size);
+      break;
+    default:
+      this.height = (10 + this.size);
+      this.width = (20 + this.size) - (10);
       break;
   }
   
@@ -344,6 +425,9 @@ Asteroid.prototype.update = function(time) {
   if(this.position.x > this.worldWidth) this.position.x -= this.worldWidth;
   if(this.position.y < 0) this.position.y += this.worldHeight;
   if(this.position.y > this.worldHeight) this.position.y -= this.worldHeight;
+
+  // Check if size is less than 0
+  this.active = this.active && this.size >= 0;
 }
 
 /**
@@ -398,7 +482,7 @@ Asteroid.prototype.render = function(time, ctx) {
 },{}],3:[function(require,module,exports){
 "use strict";
 
-const MS_PER_FRAME = 1000/16;
+const MS_PER_FRAME = 1000/8;
 
 /**
  * @module exports the Bullet class
@@ -521,7 +605,7 @@ Game.prototype.loop = function(newTime) {
 },{}],5:[function(require,module,exports){
 "use strict";
 
-const MS_PER_FRAME = 1000/16;
+const MS_PER_FRAME = 1000/8;
 
 /**
  * @module exports the Player class

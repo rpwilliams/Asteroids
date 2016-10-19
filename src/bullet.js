@@ -1,6 +1,6 @@
 "use strict";
 
-const MS_PER_FRAME = 1000/16;
+const MS_PER_FRAME = 1000/8;
 
 /**
  * @module exports the Bullet class
