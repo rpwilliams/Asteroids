@@ -3,11 +3,47 @@ canvas#screen {
 }
 
 .middle {
+  width: 760px;
+  height: 480px;
+
+  position: absolute;
+  top: 10%;
+  bottom: 0;
+  left: 0;
+  right: 0;
+
+  margin: auto;
+}
+.middle-1 {
 	width: 760px;
   height: 480px;
 
   position: absolute;
   top: 10%;
+  bottom: 0;
+  left: 0;
+  right: 0;
+
+  margin: auto;
+}
+.middle-2 {
+  width: 760px;
+  height: 480px;
+
+  position: absolute;
+  top: 15%;
+  bottom: 0;
+  left: 0;
+  right: 0;
+
+  margin: auto;
+}
+.middle-3 {
+  width: 760px;
+  height: 480px;
+
+  position: absolute;
+  top: 20%;
   bottom: 0;
   left: 0;
   right: 0;
@@ -79,4 +115,12 @@ canvas#screen {
   bottom: 40%;
   left: 0;
   right: 0;
+}
+
+footer {
+   position:fixed;
+   left:0px;
+   bottom:0px;
+   height:30px; 
+   font-size:75%;
 }

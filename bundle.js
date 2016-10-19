@@ -16,10 +16,10 @@ var asteroids = [];
 var bullets = [];
 
 var gameOver = false;
-var numAsteroids = 20;
+var numAsteroids = 10;
 var lives = 3;
-var score = 0;
 var level = 1;
+var score = 0;
 
 const MINIMUM_POINTS = 3;
 const MAXIMUM_POINTS = 6;  // Max is actually 5 because it is non inclusive
@@ -34,7 +34,8 @@ function loopBackgroundMusic()
 {
   /*
     Background music is used under the creative commons license
-    http://www.freesound.org/people/ERH/sounds/62067/
+    by Tristan_Lohengrin
+    http://www.freesound.org/people/Tristan_Lohengrin/sounds/340485/
   */
   var backgroundMusic = new Audio('static/asteroids_music.wav');
   /* Loop the music */
@@ -126,11 +127,21 @@ masterLoop(performance.now());
  * the number of milliseconds passed since the last frame.
  */
 function update(elapsedTime) {
+  console.log("Number of asteroids: " + asteroids.length);
   document.getElementById('score').innerHTML = "Score: " + score;
   document.getElementById('level').innerHTML = "Level: " + level;
   document.getElementById('lives').innerHTML = "Lives: " + lives;
+
   if(!gameOver)
   {
+    // Check if we need to proceed to the next level
+    if(asteroids.length == 0)
+    {
+      level++;
+      //document.getElementById('nextLevel').innerHTML = "Level: " + level;
+      numAsteroids += 3;
+      init();
+    }
     player.update(elapsedTime);
 
     for(var i = 0; i < bullets.length; i++)
@@ -186,7 +197,6 @@ function update(elapsedTime) {
           destroy(asteroids[j]);
           console.log("Asteroid collision!");
           break;
-          
         }
       }
     }
@@ -312,10 +322,12 @@ function destroy(asteroid)
 
   if(asteroid.size == ASTEROID_SIZE_1)
   {
+    score += 5;
     asteroid.active = false;  // eliminate the asteroid
   }
   else if(asteroid.size == ASTEROID_SIZE_2)
   {
+    score++;
     asteroids.push(new Asteroid({x: asteroid.position.x + 20, y: asteroid.position.y},
      canvas, asteroid.randomNumPoints, ASTEROID_SIZE_1, asteroid.color, true, true));
     asteroids.push(new Asteroid({x: asteroid.position.x - 20, y: asteroid.position.y},
@@ -324,6 +336,7 @@ function destroy(asteroid)
   }
   else if(asteroid.size == ASTEROID_SIZE_3)
   {
+    score++;
     asteroids.push(new Asteroid({x: asteroid.position.x + 20,y: asteroid.position.y},
      canvas, asteroid.randomNumPoints, ASTEROID_SIZE_2, asteroid.color, true, true));
     asteroids.push(new Asteroid({x: asteroid.position.x - 20,y: asteroid.position.y},
@@ -332,6 +345,7 @@ function destroy(asteroid)
   } 
   else if(asteroid.size == ASTEROID_SIZE_4)
   {
+    score++;
    asteroids.push(new Asteroid({x: asteroid.position.x + 20,y: asteroid.position.y},
     canvas, asteroid.randomNumPoints, ASTEROID_SIZE_3, asteroid.color, true, true));
     asteroids.push(new Asteroid({x: asteroid.position.x - 20, y: asteroid.position.y},
