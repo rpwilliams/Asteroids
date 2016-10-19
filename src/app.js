@@ -5,15 +5,17 @@
 const Game = require('./game.js');
 const Player = require('./player.js');
 const Asteroid = require('./asteroid.js');
+const Bullet = require('./bullet.js');
 
 /* Global variables */
 var canvas = document.getElementById('screen');
 var game = new Game(canvas, update, render);
 var player = new Player({x: canvas.width/2, y: canvas.height/2}, canvas);
 var asteroids = [];
+var bullets = [];
+
 var gameOver = false;
 var numAsteroids = 10;
-
 var lives = 3;
 var score = 0;
 var level = 1;
@@ -107,6 +109,21 @@ function update(elapsedTime) {
   if(!gameOver)
   {
     player.update(elapsedTime);
+
+    if(player.fire)
+    {
+      shoot(player);
+    }
+
+    for(var i = 0; i < bullets.length; i++)
+    {
+      bullets[i].update(elapsedTime);
+    }    
+
+    // Only include the active bullets
+    bullets = bullets.filter(function(bullet){ return bullet.active; });
+
+    // Check for player to asteroid collision
     for(var i =0; i < asteroids.length; i++)
     {
       if(boundingBoxCollision(asteroids[i], player))
@@ -115,13 +132,12 @@ function update(elapsedTime) {
         stop();
       }
     }
-    // TODO: Update the game objects
+    // Check for asteroid to asteroid collision
     for(var i = 0; i < asteroids.length; i++)
     {
       asteroids[i].update(elapsedTime);
       for(var j = i+1; j < asteroids.length; j++)
       {
-        // Asteroid to asteroid collision
         if(boundingBoxCollision(asteroids[i], asteroids[j]))
         {
           asteroids[i].color = 'red';
@@ -178,6 +194,11 @@ function render(elapsedTime, ctx) {
   {
     asteroids[i].render(elapsedTime, ctx);
   }
+  // Render the bullets
+  for(var i = 0; i < bullets.length; i++)
+  {
+    bullets[i].render(elapsedTime, ctx)
+  }
 }
 
 /**
@@ -203,4 +224,21 @@ function stop()
   audio.play();
   lives--;
   gameOver = true;
+}
+
+function shoot(player)
+{
+  var now = Date.now();
+  if(now - player.lastShootTime < player.shootRate) return;
+  player.lastShootTime = now;
+
+  var audio = new Audio('static/player_shoot.wav'); // Created with http://www.bfxr.net/
+  audio.play();
+
+  var bulletPosition = player.midpoint();
+  bullets.push(new Bullet({
+    x: bulletPosition.x, 
+    y: bulletPosition.y},
+    canvas, player.angle
+    ));
 }

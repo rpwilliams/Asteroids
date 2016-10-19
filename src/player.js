@@ -29,9 +29,19 @@ function Player(position, canvas) {
   this.thrusting = false;
   this.steerLeft = false;
   this.steerRight = false;
-
   this.height = 5;
   this.width = 5;
+  this.shootRate = 300;
+  this.lastShootTime = 0;
+  this.fire = false;
+
+  // 10 is the actual height and the width
+  this.midpoint = function() {
+    return {
+      x: this.position.x + 10/2,
+      y: this.position.y + 10/2
+    }
+  }
 
   var self = this;
   window.onkeydown = function(event) {
@@ -48,6 +58,14 @@ function Player(position, canvas) {
       case 'd':
         self.steerRight = true;
         break;
+      // Space
+      case ' ':
+        if(!self.fire)
+        {
+          self.fire = true;
+          console.log("Pew pew!");
+        }   
+        break;
     }
   }
 
@@ -61,9 +79,13 @@ function Player(position, canvas) {
       case 'a':
         self.steerLeft = false;
         break;
-      case 'ArrowRight': // right
+      case 'ArrowRight': // right  
       case 'd':
         self.steerRight = false;
+        break;
+      // Space
+      case ' ':
+        self.fire = false;
         break;
     }
   }
@@ -100,8 +122,6 @@ Player.prototype.update = function(time) {
   if(this.position.x > this.worldWidth) this.position.x -= this.worldWidth;
   if(this.position.y < 0) this.position.y += this.worldHeight;
   if(this.position.y > this.worldHeight) this.position.y -= this.worldHeight;
-
-  console.log("( " + this.position.x + "," + this.position.y + ")");
 }
 
 /**

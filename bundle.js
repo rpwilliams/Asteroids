@@ -6,15 +6,17 @@
 const Game = require('./game.js');
 const Player = require('./player.js');
 const Asteroid = require('./asteroid.js');
+const Bullet = require('./bullet.js');
 
 /* Global variables */
 var canvas = document.getElementById('screen');
 var game = new Game(canvas, update, render);
 var player = new Player({x: canvas.width/2, y: canvas.height/2}, canvas);
 var asteroids = [];
+var bullets = [];
+
 var gameOver = false;
 var numAsteroids = 10;
-
 var lives = 3;
 var score = 0;
 var level = 1;
@@ -108,6 +110,21 @@ function update(elapsedTime) {
   if(!gameOver)
   {
     player.update(elapsedTime);
+
+    if(player.fire)
+    {
+      shoot(player);
+    }
+
+    for(var i = 0; i < bullets.length; i++)
+    {
+      bullets[i].update(elapsedTime);
+    }    
+
+    // Only include the active bullets
+    bullets = bullets.filter(function(bullet){ return bullet.active; });
+
+    // Check for player to asteroid collision
     for(var i =0; i < asteroids.length; i++)
     {
       if(boundingBoxCollision(asteroids[i], player))
@@ -116,13 +133,12 @@ function update(elapsedTime) {
         stop();
       }
     }
-    // TODO: Update the game objects
+    // Check for asteroid to asteroid collision
     for(var i = 0; i < asteroids.length; i++)
     {
       asteroids[i].update(elapsedTime);
       for(var j = i+1; j < asteroids.length; j++)
       {
-        // Asteroid to asteroid collision
         if(boundingBoxCollision(asteroids[i], asteroids[j]))
         {
           asteroids[i].color = 'red';
@@ -179,6 +195,11 @@ function render(elapsedTime, ctx) {
   {
     asteroids[i].render(elapsedTime, ctx);
   }
+  // Render the bullets
+  for(var i = 0; i < bullets.length; i++)
+  {
+    bullets[i].render(elapsedTime, ctx)
+  }
 }
 
 /**
@@ -205,7 +226,24 @@ function stop()
   lives--;
   gameOver = true;
 }
-},{"./asteroid.js":2,"./game.js":3,"./player.js":4}],2:[function(require,module,exports){
+
+function shoot(player)
+{
+  var now = Date.now();
+  if(now - player.lastShootTime < player.shootRate) return;
+  player.lastShootTime = now;
+
+  var audio = new Audio('static/player_shoot.wav'); // Created with http://www.bfxr.net/
+  audio.play();
+
+  var bulletPosition = player.midpoint();
+  bullets.push(new Bullet({
+    x: bulletPosition.x, 
+    y: bulletPosition.y},
+    canvas, player.angle
+    ));
+}
+},{"./asteroid.js":2,"./bullet.js":3,"./game.js":4,"./player.js":5}],2:[function(require,module,exports){
 "use strict";
 
 const MS_PER_FRAME = 1000/16;
@@ -360,6 +398,71 @@ Asteroid.prototype.render = function(time, ctx) {
 },{}],3:[function(require,module,exports){
 "use strict";
 
+const MS_PER_FRAME = 1000/16;
+
+/**
+ * @module exports the Bullet class
+ */
+module.exports = exports = Bullet;
+
+/**
+ * @constructor Bullet
+ * Creates a new Bullet object
+ * @param {Postition} position object specifying an x and y
+ */
+function Bullet(position, canvas, angle) {
+  this.worldWidth = canvas.width;
+  this.worldHeight = canvas.height;
+  
+  this.active = true;
+  this.height = 3;
+  this.width = 3;
+  this.speed = 5;
+  this.color = "#ffffff";
+
+  this.position = {
+    x: position.x,
+    y: position.y
+  };
+
+  this.velocity = {
+    x: Math.sin(angle) * this.speed,
+    y: Math.cos(angle) * this.speed
+  }
+
+  this.inBounds = function() {
+    console.log("inbounds is being called!");
+    return this.position.x >= 0 && this.position.x <= this.worldWidth &&
+      this.position.y >= 0 && this.position.y <= this.worldHeight;
+  }
+}
+
+
+
+/**
+ * @function updates the Bullet object
+ * {DOMHighResTimeStamp} time the elapsed time since the last frame
+ */
+Bullet.prototype.update = function(time) {
+  this.position.x -= this.velocity.x;
+  this.position.y -= this.velocity.y;
+
+  this.active = this.active && this.inBounds;
+}
+
+/**
+ * @function renders the Bullet into the provided context
+ * {DOMHighResTimeStamp} time the elapsed time since the last frame
+ * {CanvasRenderingContext2D} ctx the context to render into
+ */
+Bullet.prototype.render = function(time, ctx) {
+  ctx.fillStyle = this.color;
+  ctx.fillRect(this.position.x, this.position.y, this.width, this.height);
+}
+
+},{}],4:[function(require,module,exports){
+"use strict";
+
 /**
  * @module exports the Game class
  */
@@ -415,7 +518,7 @@ Game.prototype.loop = function(newTime) {
   this.frontCtx.drawImage(this.backBuffer, 0, 0);
 }
 
-},{}],4:[function(require,module,exports){
+},{}],5:[function(require,module,exports){
 "use strict";
 
 const MS_PER_FRAME = 1000/16;
@@ -447,9 +550,19 @@ function Player(position, canvas) {
   this.thrusting = false;
   this.steerLeft = false;
   this.steerRight = false;
-
   this.height = 5;
   this.width = 5;
+  this.shootRate = 300;
+  this.lastShootTime = 0;
+  this.fire = false;
+
+  // 10 is the actual height and the width
+  this.midpoint = function() {
+    return {
+      x: this.position.x + 10/2,
+      y: this.position.y + 10/2
+    }
+  }
 
   var self = this;
   window.onkeydown = function(event) {
@@ -466,6 +579,14 @@ function Player(position, canvas) {
       case 'd':
         self.steerRight = true;
         break;
+      // Space
+      case ' ':
+        if(!self.fire)
+        {
+          self.fire = true;
+          console.log("Pew pew!");
+        }   
+        break;
     }
   }
 
@@ -479,9 +600,13 @@ function Player(position, canvas) {
       case 'a':
         self.steerLeft = false;
         break;
-      case 'ArrowRight': // right
+      case 'ArrowRight': // right  
       case 'd':
         self.steerRight = false;
+        break;
+      // Space
+      case ' ':
+        self.fire = false;
         break;
     }
   }
@@ -518,8 +643,6 @@ Player.prototype.update = function(time) {
   if(this.position.x > this.worldWidth) this.position.x -= this.worldWidth;
   if(this.position.y < 0) this.position.y += this.worldHeight;
   if(this.position.y > this.worldHeight) this.position.y -= this.worldHeight;
-
-  console.log("( " + this.position.x + "," + this.position.y + ")");
 }
 
 /**
