@@ -15,7 +15,7 @@ var player = new Player({x: canvas.width/2, y: canvas.height/2}, canvas);
 var asteroids = [];
 var bullets = [];
 var gameOver = false;
-var numAsteroids = 10;
+var numAsteroids = 5;
 var lives = 3;
 var level = 1;
 var score = 0;
@@ -259,7 +259,7 @@ function render(elapsedTime, ctx) {
     https://pixabay.com/en/space-stars-star-wars-darck-nero-1164579/
   */
   var img = new Image();
-  img.src = "static/stars.jpg";
+  img.src = "static/javascript/Asteroids/static/stars.jpg";
   ctx.drawImage(img, -20, -20);
   // Render the player
   player.render(elapsedTime, ctx, gameOver);
