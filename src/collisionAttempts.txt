@@ -1,0 +1,127 @@
+// function collision(asteroid1, asteroid2)
+// {
+//   var rect1 = {x: asteroid1.position.x, y: asteroid1.position.y, 
+//     width: asteroid1.width, height: asteroid1.height};
+//   var rect2 = {x: asteroid2.position.x, y: asteroid2.position.y, 
+//     width: asteroid2.width, height: asteroid2.height};
+//   if (rect1.x < rect2.x + rect2.width &&
+//    rect1.x + rect1.width > rect2.x &&
+//    rect1.y < rect2.y + rect2.height &&
+//    rect1.height + rect1.y > rect2.y) {
+//     console.log("Collision detected!");
+//     return;
+//     //return true;  // Collision detected
+//   }
+// }
+
+/**
+  * @function checkCollision
+  * Checks for collisions between any two asteroids
+  * @param {polygon1} The first asteroid  
+  * @param {polygon2} The next asteroid
+  * @return True if there was a collision, false otherwise
+  */
+// function checkCollision(polygon1, polygon2)
+// {
+//   var response = new SAT.Response();
+//   var collided = SAT.testPolygonPolygon(polygon1, polygon2, response);
+//   return collided;
+// }
+
+// *
+//   * @function createCollisionPolygon
+//   * Traces the outline of the asteroid to allow it to detect collisions
+//   * based on the number of points the shape has (3, 4, or 5)
+//   * @param {asteroid} The asteroid to make collision detectable
+//   * @return The traced polygon
+  
+// function createCollisionPolygon(asteroid)
+// {
+//   var V = SAT.Vector;
+//   var P = SAT.Polygon;
+//   var polygon;
+//   switch(asteroid.randomNumPoints)
+//   {
+//     // 3 point polygon
+//     case 3:
+//       polygon = new P(new V(asteroid.position.x, asteroid.position.y), [
+//       new V(asteroid.position.x, asteroid.position.y),
+//       new V(10 + asteroid.size, 0),
+//       new V(10 + asteroid.size, 20 + asteroid.size)
+//       ]);
+//       break;
+//   }
+//   return polygon;
+// }
+
+ var newAsteroid1Size = 0;
+  var newAsteroid2Size = 0;
+  /* 
+    Check for collisions
+  */
+  for(var i = 0; i < asteroids.length - 1; i++)
+  {
+    var asteroid1 = asteroids[i];
+    var asteroid2 = asteroids[i+1];
+
+    // Trace an invisible outline around each asteroid
+    //var polygon1 = createCollisionPolygon(asteroid1); 
+    //var polygon2 = createCollisionPolygon(asteroid2);
+    
+    var destroyAsteroid1 = false
+    var destroyAsteroid2 = false;
+    // Check if there is a collision
+    //if(checkCollision(polygon1, polygon2))
+    //{
+      switch(asteroid1.size)
+      {
+        case 20:
+          newAsteroid1Size = 15;
+          break;
+        case 15:
+          newAsteroid1Size = 10;
+          break;
+        case 10:
+          newAsteroid1Size = 5;
+          break;
+        case 5:
+          newAsteroid1Size = 0;
+          break;
+        case 0:
+          destroyAsteroid1 = true;
+          break;
+          //asteroid1.clearRect();
+      }
+      switch(asteroid2.size)
+      {
+        case 20:
+          newAsteroid1Size = 15;
+          break;
+        case 15:
+          newAsteroid2Size = 10;
+          break;
+        case 10:
+          newAsteroid2Size = 5;
+          break;
+        case 5:
+          newAsteroid2Size = 0;
+          break;
+        case 0:
+          destroyAsteroid2 = true;
+          break;
+          //asteroid1.clearRect();
+      }
+
+
+      var a1 = new Asteroid(asteroid1.position, canvas, asteroid1.randomNumPoints,
+        newAsteroid1Size, asteroid1.angle, 'red', asteroid1.steerRight, asteroid1.steerLeft);
+      asteroids.splice(i, 2, a1, a1);
+
+      // var a2 = new Asteroid(asteroid2.position, canvas, asteroid2.randomNumPoints,
+      //   newAsteroid2Size, asteroid2.angle, asteroid2.color, asteroid2.steerRight, asteroid2.steerLeft);
+      //asteroids.splice(i+1, 1, a2, a2);
+
+      
+      //console.log("Collision detected.");
+
+    //}
